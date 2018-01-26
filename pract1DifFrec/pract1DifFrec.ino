@@ -11,7 +11,7 @@ void setup() {
 
 ISR(TIMER1_OVF_vect){
   TCNT1=3036;
-  DIGITAL
+  digitalWrite(2, digitalRed(2)^1);
 }
 
 void loop() {
