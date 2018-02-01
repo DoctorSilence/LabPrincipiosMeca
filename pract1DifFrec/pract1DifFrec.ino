@@ -4,14 +4,14 @@ void setup() {
   TCCR1B=0;
   TCCR1A=0;
   TCNT1=3036;
-  TCCR1B|=(1<<C512);
-  TIMSU1|=(1<<T01E1);
+  TCCR1B|=(1<<CS12);
+  TIMSK1|=(1<<TOIE1);
   interrupts();
 }
 
 ISR(TIMER1_OVF_vect){
   TCNT1=3036;
-  digitalWrite(2, digitalRed(2)^1);
+  digitalWrite(2, digitalRead(2)^1);
 }
 
 void loop() {
