@@ -1,0 +1,2 @@
+ejemplo1
+-DCATKIN_DEVEL_PREFIX=/home/local/ITAM/cordazb/pract2_ros/devel -DCMAKE_INSTALL_PREFIX=/home/local/ITAM/cordazb/pract2_ros/install -G Unix Makefiles

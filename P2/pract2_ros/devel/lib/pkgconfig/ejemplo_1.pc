@@ -1,0 +1,8 @@
+prefix=/home/local/ITAM/cordazb/pract2_ros/devel
+
+Name: ejemplo_1
+Description: Description of ejemplo_1
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/local/ITAM/cordazb/pract2_ros/devel/lib 
+Requires: 
