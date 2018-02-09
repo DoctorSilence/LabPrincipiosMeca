@@ -1,0 +1,2 @@
+turtle_ctrl
+-DCATKIN_DEVEL_PREFIX=/home/local/ITAM/cordazb/pract2Turtle/devel -DCMAKE_INSTALL_PREFIX=/home/local/ITAM/cordazb/pract2Turtle/install -G Unix Makefiles
