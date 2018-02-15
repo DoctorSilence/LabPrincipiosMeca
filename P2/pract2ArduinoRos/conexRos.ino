@@ -1,14 +1,13 @@
 #include <ros.h>
 
 ros::NodeHandle nh;
-std msgs :: String str msg;
-ros :: Publisher pub("/msgFromArduino", &str msg );
+std msgs :: String str_msg;
+ros :: Publisher pub("/msgFromArduino", &str_msg );
 
 // Declarar suscriptor
-ros :: Subscriber<std msgs :: String> sub("/msgArduino", &message ros );
+ros :: Subscriber<std_msgs :: String> sub("/msgArduino", &message_ros );
 
-// LED
-int pinButton = 8;
+// LED: Puerto
 int LED = 2;
 
 void setup() {
@@ -19,24 +18,28 @@ void setup() {
   nh.subscribe(sub);
 
   // LED
-  pinMode(pinButton, INPUT);
   pinMode(LED, OUTPUT);
 }
 
 void loop() {
   // Para publicar un mensaje
-  ledStatus(1);
-  str msg.data = string variable;
-  chatter.publish(&str_msg);
+  //str_msg.data = string_variable;
+  //chatter.publish(&str_msg);
+  
   nh.spinOnce();
-  ledStatus(0)
 }
 
 // Implementar un suscriptor
 void message_ros(const std_msgs::String& ros_msg){
-  string_variable = ros_msg.data;
+  ledStatus(1);
+  delay(3000); // espera por 3 seg
+  string_variable = ros_msg.data; // EG: Como obtener contenido de ros_msg
+  // Inicia el mensaje de regreso
+  str_msg.data = "Listo";
+  chatter.publish(&str_msg);
 }
 
+// Prender o apagar un LED, con una sintaxis más sencilla
 // 0 - Apagado
 // 1 - Prendido
 void ledStatus(int status){
