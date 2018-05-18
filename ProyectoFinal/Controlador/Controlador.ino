@@ -3,23 +3,29 @@ Proyecto final para Principios de mecatrónica.
 Controlador para seguir un camino en color blanco en un "coche"
  */
 
+// Servo: min - 10, max - 170
+
 #include <SoftwareSerial.h>
 #include <Servo.h>
 #include <TimerOne.h>
 
-int infraredLPin = 9;
-int infraredRPin = 10;
+int infraredLPin = 9; // CNY70
+int infraredRPin = 10; // TCRT5000
 int servoPin = 11;
-int speedMonitorPin = 12;
+int speedMonitorPin = 2; // Ya no mover el pin
+int speedMotor = 125;
+int newSpeedMotor;
+int newAngleServo;
 int motorDPin = 13; // Derecho
 int motorRPin = 14; // Reversa
+int startTime;
 int angle = 0;
 int angleDif = 0; // Para velocidad angular
 bool isOnPathL = false;
 bool isOnPathR = false;
-int angleServo;
+int angleServo = 90;
+float kp = 0.1;
 unsigned int counter = 0;
-char traction;
 char toMove;
 Servo servoMotor;
 unsigned long time;
@@ -41,77 +47,95 @@ void setup(){
   pinMode(motorRPin, OUTPUT);
 
   servoMotor.attach(servoPin);
-  servoMotor.write(0); // Inicializar en 0º
+  servoMotor.write(90); // Inicializar en 90º
 
   xbeeSerial.begin(baud_rate);
 
   Timer1.initialize(1000000); // Timer para 1seg
-  attachInterrupt(0, count, RISING);  // Aumentar contador cuando sensor está en HIGH
+  attachInterrupt(digitalPinToInterrupt(speedMonitorPin), count, RISING);  // Aumentar contador cuando sensor está en HIGH
   Timer1.attachInterrupt(timerIsr); // Habilitar timer
 }
 
 void loop(){
-  Serial.println("Empezando pruebas...");
-  if (cont == 0) {
-    Serial.println("Empezando pruebas...");
-    setServo(90, 'l');
-    cont = cont + 1;
-  }
+
 //  if (!hasStarted) {
 //    hasStarted = checkXbee();
 //  }
 //  if (hasStarted) {
 //    // Checamos si estamos en camino
-//    isOnPathL = analogRead(infraredLPin) == HIGH;
-//    isOnPathR = analogRead(infraredRPin) == HIGH;
-//
-//    if (isOnPathL && isOnPathR) {
-//      speedMotor = 4;
-//      angleServo = 0; // Poner el servoMotor a 0º, que vaya derecho
-//      traction = 'd';
-//      toMove = 'x';
-//      Serial.println("Hacia el frente");
-//    } else if (!isOnPathL && isOnPathR) {
-//      speedMotor = 3;
-//      angleServo = 90;
-//      traction = 'd';
-//      toMove = 'r';
-//      Serial.println("Gira a la derecha");
-//    } else if (isOnPathL && !isOnPathR) {
-//      speedMotor = 2;
-//      angleServo = -90;
-//      traction = 'd';
-//      toMove = 'l';
-//      Serial.println("Gira a la izquierda");
-//    } else {
-//      speedMotor = 1;
-//      angleServo = 0; // Que se vaya derecho, lentamente
-//      traction = 'd';
-//      toMove = 'x';
-//      Serial.println("No encuentra linea… irá derecho más lento");
-//    }
-//
-//    setMotor(speedMotor, traction);
-//    setServo(angleServo, toMove);
-//  }
 
+    isOnPathL = !digitalRead(infraredLPin) == 1;
+    isOnPathR = digitalRead(infraredRPin) == 1;
+    if (isOnPathL && isOnPathR) {
+      speedMotor = 150;
+      angleServo = 90; // Poner el servoMotor a 0º, que vaya derecho
+      setMotor(speedMotor, 'd');
+      setServo(angleServo);
+      Serial.println("Hacia el frente");
+    } else if (!isOnPathL && isOnPathR) {
+      startTime = millis();
+      // angleServo = 45;
+      // speedMotor = 50;
+      while (!isOnPathL && isOnPathR) {
+        newSpeedMotor = speedMotor - kp * (millis() - startTime);
+        newAngleServo = angleServo + kp * (millis() - startTime);
+        if (newSpeedMotor <= 80){
+          newSpeedMotor = 80;
+        }
+        if (newAngleServo >= 160){
+          newAngleServo = 160;
+        }
+        setMotor(newSpeedMotor, 'd');
+        setServo(newAngleServo);
+        isOnPathL = !digitalRead(infraredLPin) == 1;
+        isOnPathR = digitalRead(infraredRPin) == 1;
+        Serial.println("Gira a la derecha"); 
+      }
+    } else if (isOnPathL && !isOnPathR) {
+      startTime = millis();
+      // angleServo = 135;
+      // speedMotor = 50;
+      while (isOnPathL && !isOnPathR) {
+        newSpeedMotor = speedMotor - kp * (millis() - startTime);
+        newAngleServo = angleServo - kp * (millis() - startTime);
+        if (newSpeedMotor <= 80){
+          newSpeedMotor = 80;
+        }
+        if (newAngleServo <= 20){
+          newAngleServo = 20;
+        }
+        setMotor(newSpeedMotor, 'd');
+        setServo(newAngleServo);
+        isOnPathL = !digitalRead(infraredLPin) == 1;
+        isOnPathR = digitalRead(infraredRPin) == 1;
+        Serial.println("Gira a la izquierda"); 
+      }
+    } else {
+      speedMotor = 80;
+      angleServo = 90; // Que se vaya derecho, lentamente
+      setMotor(speedMotor, 'd');
+      setServo(angleServo);
+      Serial.println("No encuentra linea... irá derecho más lento");
+    }
+//  }
+  delay(200);
 }
 
-void setServo(int newAngle, char moveTo) {
-  if (moveTo == 'l') {
-    for (int pos = angle; pos <= newAngle; pos += 1) { // 0º->180º
+void setServo(int to) {
+  if (angleServo <= to) {
+    for (int pos = angleServo; pos <= to; pos += 1) { // 0º->180º
       servoMotor.write(pos);
       delay(15);
     }
     Serial.println("Servo: a la izquierda");
-  } else if (moveTo == 'r'){
-    for (int pos = angle; pos >= newAngle; pos -= 1) { // 180º->0º
+  } else if (to < angleServo){
+    for (int pos = angleServo; pos >= to; pos -= 1) { // 180º->0º
       servoMotor.write(pos);
       delay(15);
     }
     Serial.println("Servo: a la derecha");
   }
-  angle = newAngle;
+  angleServo = to;
 }
 
 void setMotor(int speed, char traction){
@@ -122,8 +146,8 @@ void setMotor(int speed, char traction){
     // digitalWrite(motorRPin, 1);  // set rotation of motor to Clockwise
     Serial.println("Va derecho");
   } else if (traction == 'r') {
-    analogWrite(motorRPin, speed);
-    analogWrite(motorDPin, 0);
+    digitalWrite(motorRPin, speed);
+    digitalWrite(motorDPin, 0);
     // digitalWrite(motorRPin, 0);  // set rotation of motor to Clockwise contrario
   }
 }
@@ -131,29 +155,18 @@ void setMotor(int speed, char traction){
 void getSpeed(int speedSensor){
   // 16 hoyos
   // 360/16
-  bool isOnFreeSpace = digitalRead(speedMonitorPin) == HIGH;
-  time = millis();
-  if (isOnFreeSpace && hasChangeSpace) {
-    Serial.println(time);
-    angleDif = angleDif + 360/16;
-    speedMotor = speedMotor + angleDif/time;
-  }
-  if (speedMotor == 0) {
-    hasChangeSpace = !hasChangeSpace;
-  }
+
 }
 
-void count()  // counts from the speed sensor
-{
+void count() {  // counts from the speed sensor
   counter++;  // increase +1 the counter value
 }
 
-void timerIsr()
-{
+void timerIsr() {
   Timer1.detachInterrupt();  // Detener timer
   Serial.print("Velocidad: ");
   int speedMotor = (counter / 16);  // divide by number of holes in Disc
-  Serial.print(rotation,DEC);
+  Serial.print(speedMotor,DEC);
   Serial.println(" Rotación x Seg");
   sendSpeed(speedMotor);
   counter=0;  //  reset counter to zero
