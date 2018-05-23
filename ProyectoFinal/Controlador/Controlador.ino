@@ -58,67 +58,69 @@ void setup(){
 
 void loop(){
 
+  Serial.println(digitalRead(speedMonitorPin));  
+
 //  if (!hasStarted) {
 //    hasStarted = checkXbee();
 //  }
 //  if (hasStarted) {
 //    // Checamos si estamos en camino
 
-    isOnPathL = !digitalRead(infraredLPin) == 1;
-    isOnPathR = digitalRead(infraredRPin) == 1;
-    if (isOnPathL && isOnPathR) {
-      speedMotor = 150;
-      angleServo = 90; // Poner el servoMotor a 0º, que vaya derecho
-      setMotor(speedMotor, 'd');
-      setServo(angleServo);
-      Serial.println("Hacia el frente");
-    } else if (!isOnPathL && isOnPathR) {
-      startTime = millis();
-      // angleServo = 45;
-      // speedMotor = 50;
-      while (!isOnPathL && isOnPathR) {
-        newSpeedMotor = speedMotor - kp * (millis() - startTime);
-        newAngleServo = angleServo + kp * (millis() - startTime);
-        if (newSpeedMotor <= 80){
-          newSpeedMotor = 80;
-        }
-        if (newAngleServo >= 160){
-          newAngleServo = 160;
-        }
-        setMotor(newSpeedMotor, 'd');
-        setServo(newAngleServo);
-        isOnPathL = !digitalRead(infraredLPin) == 1;
-        isOnPathR = digitalRead(infraredRPin) == 1;
-        Serial.println("Gira a la derecha"); 
-      }
-    } else if (isOnPathL && !isOnPathR) {
-      startTime = millis();
-      // angleServo = 135;
-      // speedMotor = 50;
-      while (isOnPathL && !isOnPathR) {
-        newSpeedMotor = speedMotor - kp * (millis() - startTime);
-        newAngleServo = angleServo - kp * (millis() - startTime);
-        if (newSpeedMotor <= 80){
-          newSpeedMotor = 80;
-        }
-        if (newAngleServo <= 20){
-          newAngleServo = 20;
-        }
-        setMotor(newSpeedMotor, 'd');
-        setServo(newAngleServo);
-        isOnPathL = !digitalRead(infraredLPin) == 1;
-        isOnPathR = digitalRead(infraredRPin) == 1;
-        Serial.println("Gira a la izquierda"); 
-      }
-    } else {
-      speedMotor = 80;
-      angleServo = 90; // Que se vaya derecho, lentamente
-      setMotor(speedMotor, 'd');
-      setServo(angleServo);
-      Serial.println("No encuentra linea... irá derecho más lento");
-    }
-//  }
-  delay(200);
+//    isOnPathL = !digitalRead(infraredLPin) == 1;
+//    isOnPathR = digitalRead(infraredRPin) == 1;
+//    if (isOnPathL && isOnPathR) {
+//      speedMotor = 150;
+//      angleServo = 90; // Poner el servoMotor a 0º, que vaya derecho
+//      setMotor(speedMotor, 'd');
+//      setServo(angleServo);
+//      Serial.println("Hacia el frente");
+//    } else if (!isOnPathL && isOnPathR) {
+//      startTime = millis();
+//      // angleServo = 45;
+//      // speedMotor = 50;
+//      while (!isOnPathL && isOnPathR) {
+//        newSpeedMotor = speedMotor - kp * (millis() - startTime);
+//        newAngleServo = angleServo + kp * (millis() - startTime);
+//        if (newSpeedMotor <= 80){
+//          newSpeedMotor = 80;
+//        }
+//        if (newAngleServo >= 160){
+//          newAngleServo = 160;
+//        }
+//        setMotor(newSpeedMotor, 'd');
+//        setServo(newAngleServo);
+//        isOnPathL = !digitalRead(infraredLPin) == 1;
+//        isOnPathR = digitalRead(infraredRPin) == 1;
+//        Serial.println("Gira a la derecha"); 
+//      }
+//    } else if (isOnPathL && !isOnPathR) {
+//      startTime = millis();
+//      // angleServo = 135;
+//      // speedMotor = 50;
+//      while (isOnPathL && !isOnPathR) {
+//        newSpeedMotor = speedMotor - kp * (millis() - startTime);
+//        newAngleServo = angleServo - kp * (millis() - startTime);
+//        if (newSpeedMotor <= 80){
+//          newSpeedMotor = 80;
+//        }
+//        if (newAngleServo <= 20){
+//          newAngleServo = 20;
+//        }
+//        setMotor(newSpeedMotor, 'd');
+//        setServo(newAngleServo);
+//        isOnPathL = !digitalRead(infraredLPin) == 1;
+//        isOnPathR = digitalRead(infraredRPin) == 1;
+//        Serial.println("Gira a la izquierda"); 
+//      }
+//    } else {
+//      speedMotor = 80;
+//      angleServo = 90; // Que se vaya derecho, lentamente
+//      setMotor(speedMotor, 'd');
+//      setServo(angleServo);
+//      Serial.println("No encuentra linea... irá derecho más lento");
+//    }
+////  }
+//  delay(200);
 }
 
 void setServo(int to) {
@@ -168,7 +170,7 @@ void timerIsr() {
   int speedMotor = (counter / 16);  // divide by number of holes in Disc
   Serial.print(speedMotor,DEC);
   Serial.println(" Rotación x Seg");
-  sendSpeed(speedMotor);
+  // sendSpeed(speedMotor);
   counter=0;  //  reset counter to zero
   Timer1.attachInterrupt( timerIsr );  // Habilitar timer
 }
