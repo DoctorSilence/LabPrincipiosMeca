@@ -112,8 +112,8 @@ void loop(){
       if (newSpeedMotor <= 80 || newAngleServo >= 200){
         newSpeedMotor = 80;
       }
-      if (newAngleServo >= 120){
-        newAngleServo = 120;
+      if (newAngleServo >= 150){
+        newAngleServo = 150;
       }
       Serial.print("!L & R");
       Serial.println(newAngleServo);
